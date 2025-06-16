@@ -1,0 +1,179 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm) var(--space-md);
+  background: #222;
+  color: white;
+  height: var(--header-height);
+  z-index: var(--z-index-fixed);
+  transition: all 0.3s ease;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: white;
+  font-size: var(--fs-md);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  min-height: var(--min-touch-target);
+  display: flex;
+  align-items: center;
+}
+
+.nav-links a:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.login-btn,
+.admin-btn {
+  padding: var(--space-sm) var(--space-md);
+  border-radius: 8px;
+  font-weight: 600;
+  min-height: var(--min-touch-target);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  gap: var(--space-xs);
+  white-space: nowrap;
+}
+
+.login-btn {
+  background: #e6b906;
+  color: #1e3c72;
+}
+
+.admin-btn {
+  background-color: #ff7300;
+  color: white;
+}
+
+.login-btn:hover,
+.admin-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+/* Mobile menu */
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  padding: var(--space-xs);
+  cursor: pointer;
+  min-width: var(--min-touch-target);
+  min-height: var(--min-touch-target);
+  align-items: center;
+  justify-content: center;
+}
+
+/* Enhanced mobile styles */
+@media (max-width: 768px) {
+  .navbar {
+    padding: var(--space-xs) var(--space-sm);
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+    margin-left: auto;
+  }
+
+  .nav-links {
+    display: none;
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    background: #222;
+    padding: var(--space-md);
+    gap: var(--space-sm);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-height: calc(100vh - var(--header-height));
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nav-links.active {
+    display: flex;
+    animation: slideDown 0.3s ease-out;
+  }
+
+  .nav-links a {
+    width: 100%;
+    padding: var(--space-sm);
+    font-size: var(--fs-md);
+    justify-content: center;
+  }
+
+  .login-btn,
+  .admin-btn {
+    width: 100%;
+    padding: var(--space-sm);
+    font-size: var(--fs-md);
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .navbar {
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .nav-links {
+    gap: var(--space-sm);
+  }
+
+  .nav-links a {
+    font-size: var(--fs-sm);
+  }
+}
+
+/* Animations */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Prevent layout shift when scrollbar appears */
+@media screen and (min-width: 768px) {
+  .navbar {
+    padding-right: calc(var(--space-lg) + var(--scrollbar-width, 0px));
+  }
+}
+
+/* Enhanced accessibility */
+@media (prefers-reduced-motion: reduce) {
+
+  .navbar,
+  .nav-links a,
+  .login-btn,
+  .admin-btn {
+    transition: none;
+  }
+
+  .nav-links.active {
+    animation: none;
+  }
+}

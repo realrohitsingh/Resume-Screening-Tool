@@ -1,0 +1,563 @@
+/* About Page Styles */
+.about-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  color: #1e293b;
+  background: linear-gradient(135deg, #1E293B, #2A3B55);
+  min-height: 100vh;
+}
+
+/* Common Section Styling */
+.about-container section {
+  margin-bottom: 80px;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 8px 32px rgba(44, 62, 80, 0.07);
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 48px;
+  position: relative;
+}
+
+.section-header h2 {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
+}
+
+.section-divider {
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, #4A6CF7 0%, #8B5CF6 100%);
+  border-radius: 2px;
+  margin: 0.5rem auto 0 auto;
+}
+
+/* Hero Section */
+.about-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+  margin-bottom: 80px;
+}
+
+.hero-content h1 {
+  padding-top: 50px;
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 20px;
+  background: linear-gradient(90deg, #2e3b4e, #4A90E2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-content h1 span {
+  display: block;
+  color: #9013FE;
+  background: linear-gradient(90deg, #4A90E2, #9013FE);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  color: #475569;
+}
+
+.hero-image img {
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Story Section */
+.about-story {
+  background-color: #f8fafc;
+  padding: 60px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.story-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.story-content p {
+  margin-bottom: 20px;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #475569;
+}
+
+/* Team Section */
+.team-intro {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto 40px;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #475569;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+  margin-top: 40px;
+}
+
+.team-member {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.team-member:hover {
+  transform: translateY(-5px);
+}
+
+.member-image {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 20px;
+  border-radius: 60px;
+  overflow: hidden;
+}
+
+.member-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.team-member h3 {
+  font-size: 1.25rem;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+.member-role {
+  font-size: 1rem;
+  color: #4A6CF7;
+  display: block;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.team-member p {
+  font-size: 0.95rem;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+/* Technology Section */
+.about-technology {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 40px;
+  align-items: center;
+}
+
+.technology-content {
+  padding-right: 30px;
+}
+
+.technology-content p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #475569;
+  margin-bottom: 30px;
+}
+
+.tech-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.feature {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+}
+
+.feature:hover {
+  transform: translateY(-5px);
+}
+
+.feature-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.feature-icon svg {
+  color: #4A90E2;
+  stroke: #4A90E2;
+  width: 40px;
+  height: 40px;
+}
+
+.feature:nth-child(2) .feature-icon svg {
+  color: #42b883;
+  stroke: #42b883;
+}
+
+.feature:nth-child(3) .feature-icon svg {
+  color: #9013FE;
+  stroke: #9013FE;
+}
+
+.feature h3 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  color: #2e3b4e;
+}
+
+.feature p {
+  font-size: 0.9rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
+.technology-image img {
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Testimonials Section */
+.about-testimonials {
+  background-color: #f8fafc;
+  padding: 60px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  margin: 0 auto;
+  max-width: 1200px;
+}
+
+.testimonial-card {
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(44, 62, 80, 0.07);
+  padding: 38px 32px 32px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 320px;
+  position: relative;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.testimonial-card:hover {
+  box-shadow: 0 16px 48px rgba(74, 108, 247, 0.13);
+  transform: translateY(-4px) scale(1.015);
+}
+
+.quote-icon {
+  color: #4A6CF7;
+  font-size: 2.5rem;
+  margin-bottom: 18px;
+  font-family: 'Georgia', serif;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.testimonial-quote {
+  font-size: 1.2rem;
+  color: #000000;
+  font-style: italic;
+  margin-bottom: 32px;
+  line-height: 1.7;
+  min-height: 90px;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+}
+
+.testimonial-author {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: auto;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 20px;
+  width: 100%;
+}
+
+.company-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(74, 108, 247, 0.07);
+  border: 1px solid #e5e7eb;
+}
+
+.company-logo img {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+}
+
+.author-info h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #000000;
+  margin: 0 0 4px 0;
+  letter-spacing: 0.3px;
+}
+
+.author-info span {
+  font-size: 1rem;
+  color: #4b5563;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* CTA Section */
+.about-cta {
+  text-align: center;
+  background: linear-gradient(135deg, #4A90E2, #9013FE);
+  padding: 60px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.about-cta h2 {
+  font-size: 2rem;
+  margin-bottom: 15px;
+  color: #000000;
+  font-weight: 700;
+}
+
+.about-cta p {
+  font-size: 1.1rem;
+  margin-bottom: 30px;
+  color: #000000;
+  line-height: 1.6;
+}
+
+.cta-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.cta-button {
+  display: inline-block;
+  padding: 12px 30px;
+  border-radius: 30px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.cta-button.primary {
+  background-color: #333;
+  color: #4A90E2;
+}
+
+.cta-button.primary:hover {
+  background-color: #475569;
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.cta-button.secondary {
+  background-color: #333;
+  color: #4A90E2;
+}
+
+.cta-button.secondary:hover {
+  background-color: #475569;
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Footer Styles */
+.footer {
+  background: #333;
+  color: white;
+  padding: 40px 20px;
+  text-align: center;
+  margin-top: 80px;
+}
+
+.footer a {
+  color: #ffcc00;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer a:hover {
+  color: #ffd633;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+
+  .about-hero,
+  .about-technology {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-content h1 {
+    font-size: 2.5rem;
+  }
+
+  .technology-content {
+    padding-right: 0;
+    order: 2;
+  }
+
+  .technology-image {
+    order: 1;
+    margin-bottom: 30px;
+  }
+
+  .about-story,
+  .about-testimonials,
+  .about-cta {
+    padding: 40px 30px;
+  }
+
+  .testimonial-quote {
+    font-size: 1.15rem;
+  }
+
+  .section-header h2 {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 1200px) {
+  .team-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .about-container {
+    padding: 15px;
+  }
+
+  .about-container section {
+    padding: 30px 20px;
+    margin-bottom: 40px;
+  }
+
+  .section-header h2 {
+    font-size: 1.8rem;
+  }
+
+  .hero-content h1 {
+    font-size: 2rem;
+  }
+
+  .testimonials-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .testimonial-card {
+    padding: 24px;
+  }
+
+  .company-logo {
+    width: 50px;
+    height: 50px;
+  }
+
+  .cta-buttons {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .team-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .team-member {
+    padding: 20px;
+  }
+
+  .member-image {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+@media (max-width: 576px) {
+
+  .about-story,
+  .about-testimonials,
+  .about-cta {
+    padding: 30px 20px;
+  }
+
+  .hero-content h1 {
+    font-size: 1.8rem;
+  }
+
+  .section-header h2 {
+    font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .testimonials-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .testimonials-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .testimonial-card {
+    padding: 28px 24px 24px 24px;
+    min-height: 220px;
+  }
+
+  .about-testimonials {
+    padding: 30px 20px;
+  }
+
+  .section-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .testimonial-quote {
+    font-size: 1.1rem;
+  }
+}

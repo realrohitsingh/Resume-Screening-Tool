@@ -1,0 +1,49 @@
+.resume-preview {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 30px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    font-family: "Arial", sans-serif;
+    text-align: center;
+  }
+  
+  .resume-header {
+    background: #2c3e50;
+    color: white;
+    padding: 20px;
+    border-radius: 12px 12px 0 0;
+  }
+  
+  .resume-header h1 {
+    font-size: 28px;
+    margin-bottom: 5px;
+  }
+  
+  .resume-header p {
+    font-size: 16px;
+  }
+  
+  .resume-section {
+    text-align: left;
+    margin-top: 20px;
+  }
+  
+  .resume-section h2 {
+    font-size: 22px;
+    border-bottom: 2px solid #2c3e50;
+    padding-bottom: 5px;
+  }
+  
+  .resume-section p {
+    font-size: 16px;
+    margin-top: 10px;
+  }
+  
+  .resume-footer {
+    margin-top: 30px;
+    font-size: 14px;
+    color: gray;
+  }
+  

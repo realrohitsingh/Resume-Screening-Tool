@@ -1,0 +1,345 @@
+:root {
+    --primary-color: #4A90E2;
+    --secondary-color: #9013FE;
+    --text-color: #2e3b4e;
+    --light-bg: #f8fafc;
+    --soft-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    --hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  body {
+    background-image: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: var(--text-color);
+  }
+
+  .dashboard-container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 37px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .dashboard-container h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: var(--text-color);
+    font-weight: 600;
+  }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 25px;
+    margin-bottom: 30px;
+  }
+
+  .dashboard-column,
+  .dashboard-row {
+    background: var(--light-bg);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: var(--soft-shadow);
+  }
+
+  /* ATS Score */
+  .ats-score-container {
+    text-align: center;
+  }
+
+  .ats-score-container h2 {
+    color: black;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+  }
+
+  .gauge-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .gauge {
+    width: 200px;
+    height: 200px;
+    position: relative;
+  }
+
+  .gauge-fill {
+    border-radius: 50%;
+    transform-origin: center;
+    transition: all 0.5s ease-out;
+  }
+
+  .gauge-cover {
+    position: absolute;
+    width: 70%;
+    height: 70%;
+    background: white;
+    border-radius: 50%;
+    top: 15%;
+    left: 15%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .score-value {
+    font-size: 3rem;
+    font-weight: 700;
+  }
+
+  .score-label {
+    font-size: 1rem;
+    color: #64748b;
+  }
+
+  .score-message {
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  .score-message.good {
+    background-color: rgba(76, 175, 80, 0.1);
+    color: #1b5e20;
+  }
+
+  .score-message.average {
+    background-color: rgba(255, 152, 0, 0.1);
+    color: #e65100;
+  }
+
+  .score-message.poor {
+    background-color: rgba(244, 67, 54, 0.1);
+    color: #c62828;
+  }
+
+  /* Jobs Tracking */
+  .jobs-tracking-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .jobs-column h3 {
+    color: black;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .jobs-list {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 5px;
+  }
+
+  .job-card {
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    box-shadow: var(--soft-shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .job-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--hover-shadow);
+  }
+
+  .job-card h4 {
+    font-size: 1rem;
+    margin-bottom: 5px;
+  }
+
+  .company {
+    font-size: 0.9rem;
+    color: var(--primary-color);
+  }
+
+  .location {
+    font-size: 0.85rem;
+    color: #64748b;
+  }
+
+  .status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .status.applied {
+    background-color: rgba(74, 144, 226, 0.1);
+    color: var(--primary-color);
+  }
+
+  .match-percentage {
+    font-weight: 600;
+    color: #4caf50;
+    margin-bottom: 10px;
+  }
+
+  .apply-button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .apply-button:hover {
+    background-color: #3a7bc8;
+  }
+
+  .no-jobs-message {
+    text-align: center;
+    padding: 20px 0;
+    font-style: italic;
+    color: #64748b;
+  }
+
+  /* Skills Match */
+  .skills-match-container h2 {
+    color: black;
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 1.5rem;
+  }
+
+  .charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .chart-box,
+  .skills-recommendations {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: var(--soft-shadow);
+  }
+
+  .chart-box h3,
+  .skills-recommendations h3 {
+    color: black;
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+  }
+
+  .recommendations-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .recommendations-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f5f9;
+    color: #475569;
+  }
+
+  .recommendations-list li strong {
+    color: var(--secondary-color);
+  }
+
+  /* ATS Score Actions */
+  .ats-score-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+  }
+
+  .refresh-button,
+  .update-resume-link {
+    padding: 8px 15px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .refresh-button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+  }
+
+  .refresh-button:hover {
+    background-color: #3a7bc8;
+    transform: translateY(-2px);
+  }
+
+  .update-resume-link {
+    background-color: #f1f5f9;
+    color: var(--text-color);
+    text-decoration: none;
+    border: 1px solid #d1d5db;
+  }
+
+  .update-resume-link:hover {
+    background-color: #e2e8f0;
+    transform: translateY(-2px);
+  }
+
+  /* ATS Tips */
+  .ats-tips {
+    background-color: var(--light-bg);
+    color: #000;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 20px;
+  }
+
+  .ats-tips h4 {
+    color: #000;
+    font-size: 1rem;
+    margin-bottom: 10px;
+  }
+
+  .ats-tips li {
+    font-size: 0.85rem;
+    margin-bottom: 5px;
+    line-height: 1.5;
+  }
+
+  /* Responsive Styling */
+  @media (max-width: 992px) {
+    .dashboard-grid,
+    .charts-row {
+      grid-template-columns: 1fr;
+    }
+
+    .gauge {
+      width: 150px;
+      height: 150px;
+    }
+
+    .score-value {
+      font-size: 2.5rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .dashboard-container {
+      padding: 15px;
+      margin: 15px;
+    }
+
+    .jobs-tracking-container {
+      grid-template-columns: 1fr;
+    }
+  }

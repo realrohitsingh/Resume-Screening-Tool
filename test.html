@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vite Server Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .status-box {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .failure {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vite Server Test</h1>
+    <p>This page is a simple test to check if the Vite development server is running correctly.</p>
+    
+    <div class="status-box">
+        <p>If you're seeing this page, the Vite server is working!</p>
+        <p>Status: <span class="success">Vite Server is running</span></p>
+    </div>
+    
+    <p>Now try accessing <a href="http://localhost:3000" target="_blank">http://localhost:3000</a> to see your actual React application.</p>
+    
+    <script>
+        // Simple script to check if we're running from a server
+        if (window.location.protocol === 'file:') {
+            document.querySelector('.success').classList.add('failure');
+            document.querySelector('.success').classList.remove('success');
+            document.querySelector('.failure').textContent = 'Not running from a server';
+        }
+    </script>
+</body>
+</html> 
