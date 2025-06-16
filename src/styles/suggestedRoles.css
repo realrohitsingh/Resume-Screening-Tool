@@ -229,8 +229,8 @@
   font-weight: 500;
 }
 
-/* Card view for mobile */
-@media (max-width: 768px) {
+/* Mobile Responsive Styles */
+@media (max-width: 600px) {
   .suggested-roles {
     padding: var(--space-md);
     margin: var(--space-sm);
@@ -263,119 +263,165 @@
 
   .filter-group select {
     width: 100%;
-    padding: 10px;
+    padding: var(--space-sm);
+    min-height: var(--min-touch-target);
+    font-size: var(--fs-md);
   }
 
   /* Convert table to cards */
   .roles-table {
-    margin: 0 calc(-1 * var(--space-sm));
-    overflow-x: hidden;
+    display: none;
   }
 
-  .roles-table table,
-  .roles-table thead,
-  .roles-table tbody,
-  .roles-table th,
-  .roles-table td,
-  .roles-table tr {
-    display: block;
+  .job-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+    padding: 0;
   }
 
-  .roles-table thead tr {
-    position: absolute;
-    top: -9999px;
-    left: -9999px;
-  }
-
-  .roles-table tr {
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    margin-bottom: var(--space-sm);
-    padding: var(--space-sm);
+  .job-card {
+    background: var(--bg-primary);
+    border-radius: 12px;
+    padding: var(--space-md);
     box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
-  .roles-table td {
-    border: none;
-    position: relative;
-    padding: var(--space-xs) var(--space-sm);
-    padding-left: 45%;
-    min-height: 2.5rem;
+  .job-card-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-md);
+  }
+
+  .job-card-title {
+    font-size: var(--fs-lg);
+    color: var(--text-dark);
+    font-weight: 600;
+    word-break: break-word;
+  }
+
+  .job-card-company {
+    font-size: var(--fs-md);
+    color: var(--text-secondary);
+  }
+
+  .job-card-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .job-card-location,
+  .job-card-experience {
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
     display: flex;
     align-items: center;
+    gap: var(--space-xs);
   }
 
-  .roles-table td:before {
-    content: attr(data-label);
-    position: absolute;
-    left: var(--space-sm);
-    width: 40%;
-    padding-right: var(--space-sm);
-    font-weight: 600;
-    color: var(--text-secondary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .position-cell {
+  .job-card-actions {
+    display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    padding-left: var(--space-sm) !important;
-  }
-
-  .match-badge {
-    margin-top: var(--space-xs);
-  }
-
-  .roles-footer {
+    gap: var(--space-sm);
     margin-top: var(--space-md);
-    padding: 0 var(--space-sm);
   }
 
-  .toggle-view-button {
+  .job-card-button {
     width: 100%;
-    margin-bottom: var(--space-sm);
+    min-height: var(--min-touch-target);
+    padding: var(--space-sm) var(--space-md);
+    font-size: var(--fs-md);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
   }
 
-  .login-prompt-footer {
-    text-align: center;
+  .match-score {
+    padding: var(--space-sm);
+    border-radius: 8px;
+    background: var(--bg-accent);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .match-label {
+    font-size: var(--fs-sm);
+    color: var(--text-secondary);
+  }
+
+  .match-value {
+    font-weight: 600;
+    color: var(--primary-color);
   }
 }
 
-@media (max-width: 576px) {
+/* Tablet Responsive Styles */
+@media (min-width: 601px) and (max-width: 1024px) {
   .suggested-roles {
-    padding: var(--space-sm);
-    margin: var(--space-xs);
+    padding: var(--space-lg);
+    margin: var(--space-md);
   }
 
-  .roles-header h2 {
-    font-size: var(--fs-md);
+  .roles-table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
-  .filter-group select {
-    font-size: var(--fs-sm);
-    padding: 8px;
+  .roles-table table {
+    min-width: 800px;
   }
 
-  .roles-table tr {
-    margin-bottom: var(--space-xs);
-  }
-
+  .roles-table th,
   .roles-table td {
-    font-size: var(--fs-sm);
-    padding: var(--space-xs) var(--space-sm);
-    padding-left: 40%;
-  }
-
-  .roles-table td:before {
+    padding: var(--space-sm);
     font-size: var(--fs-sm);
   }
 
-  .match-badge {
-    font-size: var(--fs-xs);
-    padding: 2px 6px;
+  .filter-controls {
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  .filter-group {
+    flex: 1;
+    min-width: 200px;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+
+  .job-card,
+  .job-card-button,
+  .filter-group select {
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .job-card:hover {
+    transform: none;
+  }
+
+  .job-card:active,
+  .job-card-button:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+
+  .job-card,
+  .job-card-button {
+    transition: none;
   }
 }
 

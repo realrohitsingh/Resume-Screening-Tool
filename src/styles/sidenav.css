@@ -36,31 +36,33 @@
 }
 
 .nav-item {
+  min-height: var(--min-touch-target);
+  padding: var(--space-sm) var(--space-md);
   display: flex;
   align-items: center;
-  padding: var(--space-sm) var(--space-md);
+  gap: var(--space-sm);
   color: var(--text-primary);
   text-decoration: none;
   transition: all 0.2s ease;
-  gap: var(--space-sm);
-  min-height: var(--min-touch-target);
   border-radius: 8px;
   margin: 0 var(--space-xs);
+  font-weight: 500;
+  cursor: pointer;
 }
 
 .nav-item:hover {
   background: var(--bg-accent);
+  color: var(--primary-color);
 }
 
 .nav-item.active {
-  color: var(--primary-color);
   background: var(--bg-accent);
-  font-weight: 500;
+  color: var(--primary-color);
 }
 
 .nav-icon {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -124,31 +126,23 @@
   text-overflow: ellipsis;
 }
 
-/* Enhanced mobile styles */
-@media (max-width: 768px) {
+/* Mobile Responsive Styles */
+@media (max-width: 600px) {
   .sidenav {
-    transform: translateX(-100%);
+    position: fixed;
+    top: var(--header-height);
+    left: -100%;
     width: 100%;
-    max-width: 300px;
+    height: calc(100vh - var(--header-height));
+    background: var(--bg-primary);
+    z-index: var(--z-index-fixed);
+    transition: left 0.3s ease;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
-  .sidenav.active {
-    transform: translateX(0);
-    box-shadow: var(--shadow-lg);
-  }
-
-  .sidenav.collapsed {
-    width: 0;
-  }
-
-  .nav-item {
-    padding: var(--space-sm) var(--space-md);
-    margin: 0;
-    border-radius: 0;
-  }
-
-  .nav-text {
-    font-size: var(--fs-md);
+  .sidenav.expanded {
+    left: 0;
   }
 
   .sidenav-overlay {
@@ -164,33 +158,99 @@
     -webkit-backdrop-filter: blur(4px);
   }
 
-  .sidenav-overlay.active {
+  .sidenav.expanded+.sidenav-overlay {
     display: block;
   }
+
+  .nav-item {
+    padding: var(--space-sm);
+  }
+
+  .nav-link {
+    font-size: var(--fs-md);
+    min-height: var(--min-touch-target);
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .submenu-item {
+    padding-left: var(--space-lg);
+  }
+
+  .content-wrapper {
+    margin-left: 0 !important;
+    width: 100%;
+  }
+
+  body.sidenav-open {
+    overflow: hidden;
+  }
 }
 
-/* Tablet optimizations */
-@media (min-width: 769px) and (max-width: 1024px) {
+/* Tablet Responsive Styles */
+@media (min-width: 601px) and (max-width: 1024px) {
   .sidenav {
-    width: var(--sidebar-collapsed-width);
+    width: 250px;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
   }
 
-  .sidenav:hover {
-    width: var(--sidebar-width);
-    box-shadow: var(--shadow-md);
+  .sidenav.expanded {
+    transform: translateX(0);
   }
 
-  .nav-text {
-    opacity: 0;
-    transition: opacity 0.2s ease;
+  .content-wrapper {
+    margin-left: 0;
+    transition: margin-left 0.3s ease;
   }
 
-  .sidenav:hover .nav-text {
-    opacity: 1;
+  .content-wrapper.sidebar-expanded {
+    margin-left: 250px;
   }
 }
 
-/* Dark mode enhancements */
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+
+  .nav-link,
+  .submenu-item {
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .nav-link:hover,
+  .submenu-item:hover {
+    background: none;
+  }
+
+  .nav-link:active,
+  .submenu-item:active {
+    background: var(--bg-accent);
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+
+  .sidenav,
+  .content-wrapper {
+    transition: none;
+  }
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+  .sidenav {
+    background: var(--bg-dark);
+    border-color: var(--border-color-dark);
+  }
+
+  .sidenav-overlay {
+    background: rgba(0, 0, 0, 0.7);
+  }
+}
+
+/* Dark Mode Enhancements */
 .dark .sidenav {
   background: var(--bg-dark);
   border-color: rgba(255, 255, 255, 0.1);
@@ -201,17 +261,7 @@
 }
 
 .dark .nav-item.active {
-  background: rgba(74, 108, 247, 0.2);
-}
-
-/* Enhanced accessibility */
-@media (prefers-reduced-motion: reduce) {
-
-  .sidenav,
-  .nav-item,
-  .nav-text {
-    transition: none;
-  }
+  background: rgba(74, 108, 247, 0.1);
 }
 
 /* Hover effect - add a subtle indicator that the sidebar is interactive */

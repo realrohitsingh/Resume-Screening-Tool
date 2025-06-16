@@ -8,6 +8,7 @@ const HorizontalNavbar = ({ user, darkMode, toggleDarkMode, variant = "default",
   const [searchQuery, setSearchQuery] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileSearchVisible, setMobileSearchVisible] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
   const searchRef = useRef(null);
   const searchInputRef = useRef(null);
@@ -22,15 +23,36 @@ const HorizontalNavbar = ({ user, darkMode, toggleDarkMode, variant = "default",
       setUserData(JSON.parse(storedUser));
     }
 
-    // Close mobile search on click outside
+    // Close mobile search and menu on click outside
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setMobileSearchVisible(false);
       }
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+      const nav = document.querySelector('.horizontal-navbar');
+      const mobileMenu = document.querySelector('.mobile-menu');
+      if (mobileMenuOpen && nav && mobileMenu &&
+        !nav.contains(event.target) && !mobileMenu.contains(event.target)) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    // Close mobile menu on route change
+    const handleRouteChange = () => {
+      setMobileMenuOpen(false);
+      setMobileSearchVisible(false);
+      setDropdownOpen(false);
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    window.addEventListener("popstate", handleRouteChange);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("popstate", handleRouteChange);
+    };
   }, []);
 
   // Focus search input when mobile search is opened
@@ -39,6 +61,20 @@ const HorizontalNavbar = ({ user, darkMode, toggleDarkMode, variant = "default",
       searchInputRef.current.focus();
     }
   }, [mobileSearchVisible]);
+
+  // Handle body scroll lock when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen || mobileSearchVisible) {
+      document.body.classList.add('menu-open');
+    } else {
+      document.body.classList.remove('menu-open');
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.classList.remove('menu-open');
+    };
+  }, [mobileMenuOpen, mobileSearchVisible]);
 
   // Function to get user initials
   const getInitials = (name) => {
@@ -78,6 +114,11 @@ const HorizontalNavbar = ({ user, darkMode, toggleDarkMode, variant = "default",
   const toggleMobileSearch = (e) => {
     e.stopPropagation();
     setMobileSearchVisible(!mobileSearchVisible);
+  };
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+    if (dropdownOpen) setDropdownOpen(false);
   };
 
   const handleSearchSubmit = (e) => {
@@ -191,33 +232,115 @@ const HorizontalNavbar = ({ user, darkMode, toggleDarkMode, variant = "default",
     return location.pathname === path;
   };
 
+  const renderMobileMenu = () => (
+    <div className={`mobile-menu ${mobileMenuOpen ? 'active' : ''}`}>
+      <div className="mobile-nav-links">
+        <Link
+          to="/"
+          className={`mobile-nav-link ${isActive('/') ? 'active' : ''}`}
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <i className="home-icon"></i>
+          <span>Home</span>
+        </Link>
+        <Link
+          to="/dashboard"
+          className={`mobile-nav-link ${isActive('/dashboard') ? 'active' : ''}`}
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <i className="dashboard-icon"></i>
+          <span>Dashboard</span>
+        </Link>
+        <Link
+          to="/analytics"
+          className={`mobile-nav-link ${isActive('/analytics') ? 'active' : ''}`}
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <i className="analytics-icon"></i>
+          <span>Analytics</span>
+        </Link>
+        <Link
+          to="/settings"
+          className={`mobile-nav-link ${isActive('/settings') ? 'active' : ''}`}
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <i className="settings-icon"></i>
+          <span>Settings</span>
+        </Link>
+      </div>
+    </div>
+  );
+
+  const renderThemeToggle = () => (
+    <button
+      className="theme-toggle"
+      onClick={toggleDarkMode}
+      aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+    >
+      <svg
+        className="theme-toggle-icon theme-toggle-sun"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+      >
+        <path d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2a7 7 0 1 1 0-14 7 7 0 0 1 0 14zm0-18a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V2a1 1 0 0 1 1-1zm0 18a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0v-2a1 1 0 0 1 1-1zM2 12a1 1 0 0 1 1-1h2a1 1 0 1 1 0 2H3a1 1 0 0 1-1-1zm18 0a1 1 0 0 1 1-1h2a1 1 0 1 1 0 2h-2a1 1 0 0 1-1-1zM5.7 5.7a1 1 0 0 1 0-1.4l1.4-1.4a1 1 0 1 1 1.4 1.4L7.1 5.7a1 1 0 0 1-1.4 0zm11.8 11.8a1 1 0 0 1 0-1.4l1.4-1.4a1 1 0 1 1 1.4 1.4l-1.4 1.4a1 1 0 0 1-1.4 0zM5.7 18.3a1 1 0 0 1-1.4 0l-1.4-1.4a1 1 0 1 1 1.4-1.4l1.4 1.4a1 1 0 0 1 0 1.4zm11.8-11.8a1 1 0 0 1-1.4 0l-1.4-1.4a1 1 0 1 1 1.4-1.4l1.4 1.4a1 1 0 0 1 0 1.4z" />
+      </svg>
+      <svg
+        className="theme-toggle-icon theme-toggle-moon"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+      >
+        <path d="M10 7a7 7 0 0 0 12 4.9v.1c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2h.1A6.979 6.979 0 0 0 10 7zm-6 5a8 8 0 0 0 15.062 3.762A9 9 0 0 1 8.238 4.938 7.999 7.999 0 0 0 4 12z" />
+      </svg>
+    </button>
+  );
+
   // Render based on variant
   if (variant === "minimal") {
     return (
-      <div className={`horizontal-navbar minimal ${darkMode ? "dark" : "light"} ${className}`}>
-        {renderSearchBar()}
-        <button className="mobile-search-toggle" onClick={toggleMobileSearch} aria-label="Toggle search">
-          <i className="search-icon"></i>
-        </button>
+      <>
+        <div className={`horizontal-navbar minimal ${darkMode ? "dark" : "light"} ${className}`}>
+          <button
+            className="mobile-menu-btn"
+            onClick={toggleMobileMenu}
+            aria-label="Toggle navigation menu"
+            aria-expanded={mobileMenuOpen}
+          >
+            <i className={`menu-icon ${mobileMenuOpen ? 'active' : ''}`}></i>
+          </button>
 
-        <div className="navbar-actions">
-          <button className="theme-toggle" onClick={toggleDarkMode} title={darkMode ? "Switch to light mode" : "Switch to dark mode"}>
-            <span className="theme-toggle-icon theme-toggle-sun">🌞</span>
-            <span className="theme-toggle-icon theme-toggle-moon">🌙</span>
+          {renderSearchBar()}
+          <button className="mobile-search-toggle" onClick={toggleMobileSearch} aria-label="Toggle search">
+            <i className="search-icon"></i>
           </button>
-          <button className="notification-button">
-            <svg className="notification-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-          </button>
-          <div className="user-profile" ref={dropdownRef} onClick={toggleDropdown} data-open={dropdownOpen}>
-            {renderAvatar("user-avatar")}
-            <i className="dropdown-icon"></i>
-            {dropdownOpen && renderProfileDropdown()}
+
+          <div className="navbar-actions">
+            {renderThemeToggle()}
+            <button className="notification-button">
+              <svg className="notification-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+              </svg>
+            </button>
+            <div className="user-profile" ref={dropdownRef} onClick={toggleDropdown} data-open={dropdownOpen}>
+              {renderAvatar("user-avatar")}
+              <i className="dropdown-icon"></i>
+              {dropdownOpen && renderProfileDropdown()}
+            </div>
           </div>
         </div>
-      </div>
+        {renderMobileMenu()}
+        {(mobileMenuOpen || mobileSearchVisible) && (
+          <div
+            className={`mobile-menu-overlay ${mobileMenuOpen || mobileSearchVisible ? 'active' : ''}`}
+            onClick={() => {
+              setMobileMenuOpen(false);
+              setMobileSearchVisible(false);
+            }}
+          />
+        )}
+      </>
     );
   }
 
@@ -235,10 +358,7 @@ const HorizontalNavbar = ({ user, darkMode, toggleDarkMode, variant = "default",
           <i className="search-icon"></i>
         </button>
         <div className="navbar-actions">
-          <button className="theme-toggle large-button" onClick={toggleDarkMode} title={darkMode ? "Switch to light mode" : "Switch to dark mode"}>
-            <span className="theme-toggle-icon theme-toggle-sun">🌞</span>
-            <span className="theme-toggle-icon theme-toggle-moon">🌙</span>
-          </button>
+          {renderThemeToggle()}
           <button className="notification-button large-button">
             <svg className="notification-icon large-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
@@ -285,10 +405,7 @@ const HorizontalNavbar = ({ user, darkMode, toggleDarkMode, variant = "default",
         </div>
 
         <div className="navbar-actions">
-          <button className="theme-toggle large-button" onClick={toggleDarkMode}>
-            <span className="theme-toggle-icon theme-toggle-sun">🌞</span>
-            <span className="theme-toggle-icon theme-toggle-moon">🌙</span>
-          </button>
+          {renderThemeToggle()}
           <button className="notification-button large-button">
             <svg className="notification-icon large-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
@@ -331,10 +448,7 @@ const HorizontalNavbar = ({ user, darkMode, toggleDarkMode, variant = "default",
         </div>
 
         <div className="navbar-actions">
-          <button className="theme-toggle" onClick={toggleDarkMode} title={darkMode ? "Switch to light mode" : "Switch to dark mode"}>
-            <span className="theme-toggle-icon theme-toggle-sun">🌞</span>
-            <span className="theme-toggle-icon theme-toggle-moon">🌙</span>
-          </button>
+          {renderThemeToggle()}
           <button className="notification-button">
             <svg className="notification-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
@@ -353,56 +467,70 @@ const HorizontalNavbar = ({ user, darkMode, toggleDarkMode, variant = "default",
 
   // Default nav with links
   return (
-    <div className={`horizontal-navbar with-links ${className}`} style={{ backgroundColor: "#F7F4F3" }}>
-      <div className="navbar-brand">
-        <button className="menu-toggle large-button" onClick={toggleSidebar}>
-          <i className="menu-icon"></i>
-        </button>
-        <div className="company-logo">
-          <img src="/src/assets/logo.svg" alt="Logo" className="navbar-logo" style={{ height: "40px" }} />
+    <>
+      <div className={`horizontal-navbar with-links ${className}`} style={{ backgroundColor: "#F7F4F3" }}>
+        <div className="navbar-brand">
+          <button
+            className="mobile-menu-btn"
+            onClick={toggleMobileMenu}
+            aria-label="Toggle navigation menu"
+            aria-expanded={mobileMenuOpen}
+          >
+            <i className={`menu-icon ${mobileMenuOpen ? 'active' : ''}`}></i>
+          </button>
+          <div className="company-logo">
+            <img src="/src/assets/logo.svg" alt="Logo" className="navbar-logo" style={{ height: "40px" }} />
+          </div>
+          <span className="company-name">deFransz</span>
         </div>
-        <span className="company-name">deFransz</span>
-      </div>
 
-      <nav className="navbar-links">
-        <Link to="/dashboard" className={`nav-link ${isActive('/dashboard') ? 'active' : ''}`}>
-          <i className="dashboard-icon"></i>
-          <span>Dashboard</span>
-        </Link>
-        <Link to="/analytics" className={`nav-link ${isActive('/analytics') ? 'active' : ''}`}>
-          <i className="analytics-icon"></i>
-          <span>Analytics</span>
-          <i className="dropdown-arrow"></i>
-        </Link>
-        <Link to="/products" className={`nav-link ${isActive('/products') ? 'active' : ''}`}>
-          <i className="products-icon"></i>
-          <span>Products</span>
-          <i className="dropdown-arrow"></i>
-        </Link>
-        <Link to="/settings" className={`nav-link ${isActive('/settings') ? 'active' : ''}`}>
-          <i className="settings-icon"></i>
-          <span>Settings</span>
-        </Link>
-      </nav>
+        <nav className={`navbar-links ${mobileMenuOpen ? 'active' : ''}`}>
+          <Link to="/dashboard" className={`nav-link ${isActive('/dashboard') ? 'active' : ''}`}>
+            <i className="dashboard-icon"></i>
+            <span>Dashboard</span>
+          </Link>
+          <Link to="/analytics" className={`nav-link ${isActive('/analytics') ? 'active' : ''}`}>
+            <i className="analytics-icon"></i>
+            <span>Analytics</span>
+            <i className="dropdown-arrow"></i>
+          </Link>
+          <Link to="/products" className={`nav-link ${isActive('/products') ? 'active' : ''}`}>
+            <i className="products-icon"></i>
+            <span>Products</span>
+            <i className="dropdown-arrow"></i>
+          </Link>
+          <Link to="/settings" className={`nav-link ${isActive('/settings') ? 'active' : ''}`}>
+            <i className="settings-icon"></i>
+            <span>Settings</span>
+          </Link>
+        </nav>
 
-      <div className="navbar-actions">
-        <button className="theme-toggle" onClick={toggleDarkMode} title={darkMode ? "Switch to light mode" : "Switch to dark mode"}>
-          <span className="theme-toggle-icon theme-toggle-sun">🌞</span>
-          <span className="theme-toggle-icon theme-toggle-moon">🌙</span>
-        </button>
-        <button className="notification-button">
-          <svg className="notification-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-          </svg>
-        </button>
-        <div className="user-profile" ref={dropdownRef} onClick={toggleDropdown}>
-          {renderAvatar("user-avatar")}
-          <i className="dropdown-icon"></i>
-          {dropdownOpen && renderProfileDropdown()}
+        <div className="navbar-actions">
+          {renderThemeToggle()}
+          <button className="notification-button">
+            <svg className="notification-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+          </button>
+          <div className="user-profile" ref={dropdownRef} onClick={toggleDropdown}>
+            {renderAvatar("user-avatar")}
+            <i className="dropdown-icon"></i>
+            {dropdownOpen && renderProfileDropdown()}
+          </div>
         </div>
       </div>
-    </div>
+      {renderMobileMenu()}
+      {(mobileMenuOpen || mobileSearchVisible) && (
+        <div
+          className={`mobile-menu-overlay ${mobileMenuOpen || mobileSearchVisible ? 'active' : ''}`}
+          onClick={() => {
+            setMobileMenuOpen(false);
+            setMobileSearchVisible(false);
+          }}
+        />
+      )}
+    </>
   );
 };
 
