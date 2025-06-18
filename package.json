@@ -1,15 +1,15 @@
 {
-  "name": "resume-builder",
-  "version": "1.0.0",
-  "main": "index.js",
+  "name": "resume-screening-tool",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "start": "vite",
-    "start:frontend": "vite",
-    "start:backend": "cd server && python api/job_api.py",
-    "dev": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
+    "dev": "vite",
     "build": "vite build",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "setup:backend": "cd server && python -m venv venv && .\\venv\\Scripts\\activate && pip install -r requirements.txt && python -c \"import nltk; nltk.download('stopwords'); nltk.download('punkt')\" && python -m spacy download en_core_web_sm"
+    "start:frontend": "vite --port 5174",
+    "start:backend": "cd server && python run_server.py"
   },
   "keywords": [],
   "author": "",
@@ -24,14 +24,21 @@
     "jsonresume-theme-even": "^0.23.0",
     "jsonresume-theme-paper": "^0.5.0",
     "jsonresume-theme-stackoverflow": "^2.1.0",
+    "nltk": "^0.0.1",
     "react": "^18.2.0",
+    "react-circular-progressbar": "^2.1.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.22.1",
+    "react-router-dom": "^6.22.3",
     "recharts": "^2.15.2"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.0.3",
-    "concurrently": "^8.2.2",
-    "vite": "4.4.5"
+    "@types/react": "^18.2.64",
+    "@types/react-dom": "^18.2.21",
+    "@vitejs/plugin-react": "^4.2.1",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.34.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "vite": "^5.1.6"
   }
 }

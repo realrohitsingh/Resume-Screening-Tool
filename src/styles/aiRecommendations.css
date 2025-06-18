@@ -1,0 +1,175 @@
+.ai-recommendations-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+}
+
+.ai-recommendations-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.back-button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  color: #4a5568;
+  background-color: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.back-button:hover {
+  background-color: #edf2f7;
+}
+
+.generate-button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  color: white;
+  background-color: #4c6ef5;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.generate-button:hover {
+  background-color: #3b5bdb;
+}
+
+.ai-recommendations-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.ai-recommendations-title h1 {
+  font-size: 2rem;
+  color: #2d3748;
+  margin: 0;
+}
+
+.ai-badge {
+  padding: 0.5rem 1rem;
+  background-color: #ebf4ff;
+  color: #4c6ef5;
+  border-radius: 2rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.info-box {
+  background-color: #f0f9ff;
+  border-left: 4px solid #4c6ef5;
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+  border-radius: 0.5rem;
+}
+
+.info-box p {
+  margin: 0;
+  color: #2d3748;
+}
+
+.skills-section,
+.strengths-section,
+.growth-section {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+h2 {
+  font-size: 1.25rem;
+  color: #2d3748;
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.skills-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.skill-tag {
+  padding: 0.5rem 1rem;
+  background-color: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 2rem;
+  font-size: 0.875rem;
+  color: #4a5568;
+  transition: all 0.2s;
+}
+
+.skill-tag:hover {
+  background-color: #edf2f7;
+}
+
+.strengths-list,
+.growth-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.strength-item,
+.growth-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1rem;
+  color: #4a5568;
+}
+
+.checkmark {
+  color: #48bb78;
+  font-weight: bold;
+}
+
+.bullet {
+  color: #4c6ef5;
+  font-size: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .ai-recommendations-container {
+    margin: 1rem;
+    padding: 0 1rem;
+  }
+
+  .ai-recommendations-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .back-button,
+  .generate-button {
+    width: 100%;
+  }
+
+  .ai-recommendations-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .ai-recommendations-title h1 {
+    font-size: 1.5rem;
+  }
+
+  .skills-grid {
+    gap: 0.5rem;
+  }
+
+  .skill-tag {
+    font-size: 0.75rem;
+  }
+} 

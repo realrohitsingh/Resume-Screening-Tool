@@ -1,21 +1,33 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "../styles/resume.css";
-import { uploadResumeForRecommendations, checkJobApiHealth } from "../utils/api";
+import { uploadResumeForRecommendations, checkJobApiHealth, saveATSScore, getATSScores } from "../utils/api";
 import { getMatchingJobs, generateUserStrengths, generateImprovementAreas } from "../utils/jobMatchingService";
 import { extractResumeText, extractStructuredData } from "../utils/resumeParser";
 import { calculateATSScore } from "../utils/atsScoring";
+import { getCachedATSScore, cacheATSScore, clearExpiredCache } from "../utils/atsCache";
+import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
+import AICareerRecommendations from "../components/AICareerRecommendations";
 
 const UploadResume = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userId, setUserId] = useState(null);
   const [file, setFile] = useState(null);
   const [jobPreference, setJobPreference] = useState("");
   const [experienceLevel, setExperienceLevel] = useState("");
   const [workStyle, setWorkStyle] = useState("");
   const [personalValues, setPersonalValues] = useState("");
   const [careerGoals, setCareerGoals] = useState("");
-  const [recommendation, setRecommendation] = useState(null);
+  const [recommendation, setRecommendation] = useState({
+    eligibilityMessage: "",
+    pros: [],
+    cons: [],
+    jobSuggestions: [],
+    atsScore: null,
+    atsFeedback: []
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [apiAvailable, setApiAvailable] = useState(false);
@@ -28,11 +40,18 @@ const UploadResume = () => {
   const [atsScore, setAtsScore] = useState(null);
   const [atsAnalysis, setAtsAnalysis] = useState(null);
   const [resumeData, setResumeData] = useState(null);
+  const [previousScores, setPreviousScores] = useState([]);
+  const [atsScores, setAtsScores] = useState([]);
+  const [currentAtsScore, setCurrentAtsScore] = useState(null);
+  const [extractedData, setExtractedData] = useState(null);
+  const [user, setUser] = useState(null);
 
   // Check if user is logged in when the component mounts
   useEffect(() => {
     const loggedIn = localStorage.getItem("isLoggedIn") === "true";
+    const storedUserId = localStorage.getItem("userId");
     setIsLoggedIn(loggedIn);
+    setUserId(storedUserId);
 
     const checkApiStatus = async () => {
       const isAvailable = await checkJobApiHealth();
@@ -40,7 +59,40 @@ const UploadResume = () => {
     };
 
     checkApiStatus();
+
+    // Load previous ATS scores if user is logged in
+    if (loggedIn && storedUserId) {
+      loadPreviousScores(storedUserId);
+    }
   }, []);
+
+  // Load previous ATS scores for the user
+  const loadPreviousScores = async (uid) => {
+    try {
+      const response = await getATSScores(uid);
+      if (response.status === 'success') {
+        const scores = Object.values(response.scores).sort((a, b) => 
+          new Date(b.timestamp) - new Date(a.timestamp)
+        );
+        setPreviousScores(scores);
+      }
+    } catch (error) {
+      console.error('Error loading previous scores:', error);
+    }
+  };
+
+  // Save ATS score to backend
+  const saveScore = async (score, feedback, resumeId) => {
+    if (!userId) return;
+    
+    try {
+      await saveATSScore(userId, resumeId, score, feedback);
+      // Reload scores after saving
+      await loadPreviousScores(userId);
+    } catch (error) {
+      console.error('Error saving score:', error);
+    }
+  };
 
   // Check if form is complete for current step
   useEffect(() => {
@@ -60,26 +112,53 @@ const UploadResume = () => {
       setErrorMessage("");
 
       try {
-        // Extract resume text
         setIsLoading(true);
-        const extractedText = await extractResumeText(selectedFile);
-        setResumeText(extractedText);
-
-        // Analyze the resume for ATS compatibility
-        const atsAnalysisResult = calculateATSScore(extractedText);
-        setAtsScore(atsAnalysisResult.score);
-        setAtsAnalysis(atsAnalysisResult);
-
-        // Extract structured data
-        const extractedData = extractStructuredData(extractedText);
+        
+        // Extract text from resume
+        const resumeText = await extractResumeText(selectedFile);
+        setResumeText(resumeText);
+        
+        // Check cache for ATS score
+        const cachedScore = getCachedATSScore(resumeText);
+        
+        if (cachedScore) {
+          // Use cached score
+          setAtsScore(cachedScore.score);
+          setAtsAnalysis({
+            score: cachedScore.score,
+            feedback: cachedScore.feedback
+          });
+        } else {
+          // Calculate new score
+          const result = await uploadResumeForRecommendations(selectedFile, userId);
+          
+          if (result.status === 'success') {
+            // Cache the new score
+            cacheATSScore(resumeText, {
+              score: result.ats_score,
+              feedback: result.feedback
+            });
+            
+            // Set state
+            setAtsScore(result.ats_score);
+            setAtsAnalysis({
+              score: result.ats_score,
+              feedback: result.feedback
+            });
+          }
+        }
+        
+        // Extract and set other data
+        const extractedData = await extractStructuredData(selectedFile);
         setResumeData(extractedData);
-        setExtractedSkills(extractedData.skills);
-
-        // Save ATS score and feedback to localStorage
-        localStorage.setItem("atsScore", atsAnalysisResult.score);
-        localStorage.setItem("atsFeedback", JSON.stringify(atsAnalysisResult.feedback));
-        localStorage.setItem("userSkills", JSON.stringify(extractedData.skills));
-
+        setExtractedSkills(extractedData.skills || []);
+        
+        // Save to localStorage
+        localStorage.setItem("userSkills", JSON.stringify(extractedData.skills || []));
+        
+        // Move to next step
+        setCurrentStep(2);
+        
         setIsLoading(false);
       } catch (error) {
         console.error("Error processing resume:", error);
@@ -87,6 +166,65 @@ const UploadResume = () => {
         setIsLoading(false);
       }
     }
+  };
+
+  // Clear expired cache entries on component mount
+  useEffect(() => {
+    clearExpiredCache();
+  }, []);
+
+  const generateStrengths = (resumeData, recommendations) => {
+    const strengths = [];
+    
+    // Add skills-based strength
+    if (resumeData.skills && resumeData.skills.length > 0) {
+      strengths.push(`Strong technical aptitude with ${resumeData.skills.length} relevant skills`);
+    }
+    
+    // Add experience-based strength
+    if (resumeData.total_experience) {
+      strengths.push(`${resumeData.total_experience} years of professional experience`);
+    }
+    
+    // Add education-based strength
+    if (resumeData.education && resumeData.education.length > 0) {
+      strengths.push('Strong educational background');
+    }
+    
+    // Add job match strength
+    const highMatchJobs = recommendations.filter(job => job.match_score >= 80);
+    if (highMatchJobs.length > 0) {
+      strengths.push(`Strong match for ${highMatchJobs.length} positions`);
+    }
+    
+    return strengths;
+  };
+
+  const generateImprovements = (resumeData, recommendations) => {
+    const improvements = [];
+    
+    // Skills improvement
+    if (!resumeData.skills || resumeData.skills.length < 10) {
+      improvements.push('Consider adding more industry-specific skills');
+    }
+    
+    // Experience improvement
+    if (!resumeData.total_experience || resumeData.total_experience < 2) {
+      improvements.push('Limited professional experience');
+    }
+    
+    // Education improvement
+    if (!resumeData.education || resumeData.education.length === 0) {
+      improvements.push('Consider adding educational qualifications');
+    }
+    
+    // Job match improvement
+    const lowMatchJobs = recommendations.filter(job => job.match_score < 70);
+    if (lowMatchJobs.length > recommendations.length / 2) {
+      improvements.push('Consider developing skills in trending technologies');
+    }
+    
+    return improvements;
   };
 
   const handleDrag = (e) => {
@@ -125,7 +263,11 @@ const UploadResume = () => {
         setResumeData(extractedData);
         setExtractedSkills(extractedData.skills);
 
-        // Save ATS score and feedback to localStorage
+        // Save ATS score and feedback
+        const resumeId = `${Date.now()}_${droppedFile.name}`;
+        await saveScore(atsAnalysisResult.score, atsAnalysisResult.feedback, resumeId);
+
+        // Save to localStorage
         localStorage.setItem("atsScore", atsAnalysisResult.score);
         localStorage.setItem("atsFeedback", JSON.stringify(atsAnalysisResult.feedback));
         localStorage.setItem("userSkills", JSON.stringify(extractedData.skills));
@@ -199,40 +341,54 @@ const UploadResume = () => {
 
       if (apiAvailable) {
         // Use the backend API for job recommendations
-        const result = await uploadResumeForRecommendations(file);
+        const result = await uploadResumeForRecommendations(file, userId);
 
-        // Merge skills from API with extracted skills if both available
-        const mergedSkills = [...new Set([
-          ...(result.skills_extracted || []),
-          ...skills
-        ])];
+        if (result.status === 'success') {
+          // Get the extracted data and recommendations from the API response
+          const apiExtractedData = result.extracted_data;
+          const apiRecommendations = result.recommendations;
 
-        setExtractedSkills(mergedSkills);
-        localStorage.setItem("userSkills", JSON.stringify(mergedSkills));
+          // Merge skills from API with extracted skills if both available
+          const mergedSkills = [...new Set([
+            ...(apiExtractedData?.skills || []),
+            ...skills
+          ])];
 
-        // Get matching jobs from our job matching service
-        const matchingJobs = getMatchingJobs(userPreferences, mergedSkills);
+          setExtractedSkills(mergedSkills);
+          localStorage.setItem("userSkills", JSON.stringify(mergedSkills));
 
-        // Generate personalized strengths and improvement areas
-        const strengths = generateUserStrengths(userPreferences, mergedSkills);
-        const improvements = generateImprovementAreas(userPreferences, matchingJobs);
+          // Get matching jobs from our job matching service
+          const matchingJobs = getMatchingJobs(userPreferences, mergedSkills);
 
-        // If we have matching jobs, use them; otherwise, use the API results
-        const jobSuggestions = matchingJobs.length > 0
-          ? matchingJobs
-          : result.jobs;
+          // Generate personalized strengths and improvement areas
+          const strengths = generateUserStrengths(userPreferences, mergedSkills);
+          const improvements = generateImprovementAreas(userPreferences, matchingJobs);
 
-        // Set the recommendation
-        setRecommendation({
-          eligibilityMessage: matchingJobs.length > 0
-            ? `Based on your profile and skills, we found ${matchingJobs.length} matching jobs.`
-            : `Based on your skills, we found ${result.jobs.length} matching jobs.`,
-          pros: strengths,
-          cons: improvements,
-          jobSuggestions: jobSuggestions,
-          atsScore: atsResults?.score || null,
-          atsFeedback: atsResults?.feedback || []
-        });
+          // If we have API recommendations, use them; otherwise, use the matching jobs
+          const jobSuggestions = apiRecommendations.length > 0
+            ? apiRecommendations
+            : matchingJobs;
+
+          // Set the recommendation
+          setRecommendation({
+            eligibilityMessage: apiRecommendations.length > 0
+              ? `Based on your profile and skills, we found ${apiRecommendations.length} matching jobs.`
+              : `Based on your skills, we found ${matchingJobs.length} matching jobs.`,
+            pros: strengths,
+            cons: improvements,
+            jobSuggestions: jobSuggestions.map(job => ({
+              title: job.position || job.title,
+              company: job.company,
+              location: job.location,
+              matchPercentage: job.match_score || job.matchPercentage,
+              atsScore: job.ats_score
+            })),
+            atsScore: atsResults?.score || null,
+            atsFeedback: atsResults?.feedback || []
+          });
+        } else {
+          throw new Error(result.error || 'Failed to get recommendations');
+        }
       } else {
         // Fallback to frontend-based recommendations if API is not available
         generateFrontendRecommendations(skills);
@@ -477,99 +633,8 @@ const UploadResume = () => {
   const renderAtsScorePreview = () => {
     if (!atsScore) return null;
 
-    const getScoreColor = () => {
-      if (atsScore >= 80) return "#4caf50"; // Green
-      if (atsScore >= 60) return "#ff9800"; // Orange
-      return "#f44336"; // Red
-    };
-
-    const getScoreMessage = () => {
-      if (atsScore >= 80) return "Great! Your resume is well-optimized for ATS systems.";
-      if (atsScore >= 60) return "Your resume needs some improvements for better ATS compatibility.";
-      return "Your resume requires significant improvements to pass ATS systems.";
-    };
-
     return (
       <div className="ats-score-preview">
-        <h3>Resume ATS Score</h3>
-        <div className="score-container" style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '15px' }}>
-          <div className="resume-strength-circle" style={{
-              position: 'relative',
-              width: '120px',
-              height: '120px',
-              backgroundColor: 'white',
-              borderRadius: '10px',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '15px'
-            }}>
-            <svg width="90" height="90" viewBox="0 0 120 120">
-              <circle
-                cx="60"
-                cy="60"
-                r="54"
-                fill="none"
-                stroke="#f0f9f6"
-                strokeWidth="12"
-              />
-              <circle
-                cx="60"
-                cy="60"
-                r="54"
-                fill="none"
-                stroke="#09B294"
-                strokeWidth="12"
-                strokeDasharray="339.292"
-                strokeDashoffset={(339.292 * (1 - 95/100))}
-                transform="rotate(-90 60 60)"
-              />
-            </svg>
-            <div style={{
-              position: 'absolute',
-              top: '32%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              fontSize: 'px',
-              fontWeight: 'bold',
-              color: '#212B36'
-            }}>
-              95
-            </div>
-            <div style={{
-              marginTop: '10px',
-              fontSize: '12px',
-              fontWeight: 'bold',
-              color: '#637381',
-              textTransform: 'uppercase'
-            }}>
-              RESUME STRENGTH
-            </div>
-          </div>
-          <div className="score-details" style={{ flex: '1' }}>
-            <p className="score-message" style={{ color: getScoreColor(), fontWeight: '600', marginBottom: '12px' }}>{getScoreMessage()}</p>
-            {atsAnalysis?.feedback && atsAnalysis.feedback.length > 0 && (
-              <div className="score-feedback">
-                <p><strong>Key Insights:</strong></p>
-                <ul style={{ marginTop: '8px', paddingLeft: '5px', listStyleType: 'none' }}>
-                  {atsAnalysis.feedback.slice(0, 3).map((feedback, index) => (
-                    <li key={index} style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
-                      <span className="feedback-icon" style={{ marginRight: '8px', fontSize: '16px' }}>
-                        {index === 0 ? '🔍' : index === 1 ? '💡' : '✓'}
-                      </span>
-                      <span className="feedback-text" style={{ fontSize: '14px', color: '#334155', flex: '1' }}>{feedback}</span>
-                    </li>
-                  ))}
-                </ul>
-                {atsAnalysis.feedback.length > 3 && (
-                  <p className="more-feedback" style={{ fontSize: '13px', color: '#64748b', marginTop: '5px' }}>+ {atsAnalysis.feedback.length - 3} more insights available in dashboard</p>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
         <div className="view-details" style={{ marginTop: '15px', textAlign: 'right' }}>
           <Link to="/dashboard" className="view-details-link" style={{ display: 'inline-flex', alignItems: 'center', color: '#4a6cf7', fontSize: '14px', fontWeight: '500', textDecoration: 'none' }}>
             View detailed analysis in your dashboard
@@ -670,178 +735,46 @@ const UploadResume = () => {
 
   // Add ATS score to recommendation display
   const renderRecommendation = () => {
-    if (!recommendation) return null;
+    if (!resumeData) return null;
+
+    const strengths = [
+      "Strong technical aptitude for software development",
+      "Proficient in in-demand programming languages",
+      "Fresh perspective and eagerness to learn",
+      "Self-motivated with strong remote work capabilities"
+    ];
+
+    const areasForGrowth = [
+      "Limited professional experience",
+      "May require additional training and mentorship"
+    ];
 
     return (
-      <div className="recommendation-container">
-        <h2>Your Personalized Resume Analysis</h2>
+      <AICareerRecommendations
+        skills={extractedSkills}
+        strengths={strengths}
+        areasForGrowth={areasForGrowth}
+        matchingJobs={10}
+      />
+    );
+  };
 
-        {recommendation.atsScore && (
-          <div className="ats-score-section">
-            <div className="ats-score-header">
-              <h3>ATS Compatibility Score</h3>
-              <div className="ats-score-badge">
-                <span className="score-value">{recommendation.atsScore}</span>
-                <span className="score-max">/100</span>
+  // Add a section to display previous scores
+  const renderPreviousScores = () => {
+    if (!previousScores.length) return null;
+
+    return (
+      <div className="previous-scores">
+        <h3>Previous ATS Scores</h3>
+        <div className="scores-list">
+          {previousScores.slice(0, 5).map((score, index) => (
+            <div key={index} className="score-item">
+              <div className="score-value">{score.score}</div>
+              <div className="score-date">
+                {new Date(score.timestamp).toLocaleDateString()}
               </div>
             </div>
-
-            <div className="progress-container">
-              <div className="progress-bar">
-                <div
-                  className="progress-fill"
-                  style={{
-                    width: `${recommendation.atsScore}%`,
-                    backgroundColor: recommendation.atsScore >= 80 ? '#4caf50' : recommendation.atsScore >= 60 ? '#ff9800' : '#f44336'
-                  }}
-                ></div>
-              </div>
-              <div className="progress-label">
-                {recommendation.atsScore >= 80
-                  ? "Your resume is well-optimized for ATS systems"
-                  : recommendation.atsScore >= 60
-                    ? "Your resume needs some improvements for ATS compatibility"
-                    : "Your resume requires significant improvements"
-                }
-              </div>
-            </div>
-
-            {recommendation.atsFeedback && recommendation.atsFeedback.length > 0 && (
-              <div className="ats-feedback">
-                <h4>Key Insights:</h4>
-                <ul className="feedback-list">
-                  {recommendation.atsFeedback.slice(0, 5).map((feedback, index) => (
-                    <li key={index}>
-                      <span className="feedback-icon">
-                        {index % 3 === 0 ? '🔍' : index % 3 === 1 ? '💡' : '✓'}
-                      </span>
-                      <span className="feedback-text">{feedback}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className="eligibility-message">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M12 16v-4"></path>
-            <path d="M12 8h.01"></path>
-          </svg>
-          <p>{recommendation.eligibilityMessage}</p>
-        </div>
-
-        <div className="strengths-weaknesses">
-          <div className="strengths">
-            <div className="section-header">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4caf50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 6L9 17l-5-5"></path>
-              </svg>
-              <h3>Your Strengths</h3>
-            </div>
-          <ul>
-            {recommendation.pros.map((pro, index) => (
-              <li key={index}>{pro}</li>
-            ))}
-          </ul>
-          </div>
-
-          <div className="improvement-areas">
-            <div className="section-header">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff9800" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="12"></line>
-                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-              </svg>
-              <h3>Areas for Improvement</h3>
-            </div>
-          <ul>
-            {recommendation.cons.map((con, index) => (
-              <li key={index}>{con}</li>
-            ))}
-          </ul>
-        </div>
-        </div>
-
-        <div className="job-matches">
-          <div className="section-header">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4a6cf7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-            </svg>
-            <h3>Job Matches</h3>
-          </div>
-
-          <div className="location-filter">
-            <label htmlFor="location-filter">Filter by location: </label>
-            <select
-              id="location-filter"
-              value={selectedLocation}
-              onChange={(e) => setSelectedLocation(e.target.value)}
-            >
-              <option value="all">All Locations</option>
-              {/* ...rest of locations */}
-            </select>
-          </div>
-
-          <div className="job-list">
-            {filterJobsByLocation(recommendation.jobSuggestions).map((job, index) => (
-              <div className="job-card" key={index}>
-                <h4>{job.position}</h4>
-                <p className="company">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                  </svg>
-                  {job.company}
-                </p>
-                <p className="location">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                    <circle cx="12" cy="10" r="3"></circle>
-                  </svg>
-                  {job.location}
-                </p>
-                {job.matchScore && (
-                  <div className="match-score">
-                    <span className="score-label">Match:</span>
-                    <div className="match-progress">
-                      <div
-                        className="match-fill"
-                        style={{ width: `${job.matchScore}%` }}
-                      ></div>
-                    </div>
-                    <span className="score-value">{job.matchScore}%</span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="final-actions">
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="dashboard-button"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="3" y1="9" x2="21" y2="9"></line>
-              <line x1="9" y1="21" x2="9" y2="9"></line>
-            </svg>
-            View Dashboard
-          </button>
-          <button
-            onClick={() => setRecommendation(null)}
-            className="try-again-button"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M2.5 2v6h6M21.5 22v-6h-6"></path>
-              <path d="M22 11.5A10 10 0 0 0 3.2 7.2M2 12.5a10 10 0 0 0 18.8 4.2"></path>
-            </svg>
-            Try Different Resume
-          </button>
+          ))}
         </div>
       </div>
     );
@@ -940,7 +873,7 @@ const UploadResume = () => {
           </div>
         </form>
 
-        {recommendation && (
+        {recommendation && recommendation.eligibilityMessage && (
           <div className="recommendation-box">
             <div className="recommendation-header">
               <h2>AI Career Recommendations</h2>
@@ -967,7 +900,7 @@ const UploadResume = () => {
               <div className="recommendation-section">
                 <h3>Strengths</h3>
                 <ul className="strength-list">
-                  {recommendation.pros.map((pro, index) => (
+                  {(recommendation.pros || []).map((pro, index) => (
                     <li key={index}>
                       <span className="pro-icon">✓</span>
                       {pro}
@@ -979,7 +912,7 @@ const UploadResume = () => {
               <div className="recommendation-section">
                 <h3>Areas for Growth</h3>
                 <ul className="growth-list">
-                  {recommendation.cons.map((con, index) => (
+                  {(recommendation.cons || []).map((con, index) => (
                     <li key={index}>
                       <span className="con-icon">!</span>
                       {con}
@@ -1023,7 +956,7 @@ const UploadResume = () => {
                     <tbody>
                       {filterJobsByLocation(recommendation.jobSuggestions).map((job, index) => (
                         <tr key={index}>
-                          <td>{job.position}</td>
+                          <td>{job.title || job.position}</td>
                           <td>{job.company}</td>
                           <td>{job.location}</td>
                         </tr>

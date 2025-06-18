@@ -1,0 +1,110 @@
+Skill,Category
+Python,Programming Languages
+Java,Programming Languages
+JavaScript,Programming Languages
+TypeScript,Programming Languages
+C++,Programming Languages
+C#,Programming Languages
+Ruby,Programming Languages
+PHP,Programming Languages
+Swift,Programming Languages
+Kotlin,Programming Languages
+Go,Programming Languages
+Rust,Programming Languages
+Scala,Programming Languages
+R,Programming Languages
+MATLAB,Programming Languages
+Perl,Programming Languages
+Shell,Programming Languages
+Bash,Programming Languages
+HTML,Web Technologies
+CSS,Web Technologies
+SASS,Web Technologies
+LESS,Web Technologies
+React,Web Technologies
+Angular,Web Technologies
+Vue.js,Web Technologies
+Node.js,Web Technologies
+Express,Web Technologies
+Django,Web Technologies
+Flask,Web Technologies
+Spring,Web Technologies
+ASP.NET,Web Technologies
+Laravel,Web Technologies
+Bootstrap,Web Technologies
+Tailwind,Web Technologies
+jQuery,Web Technologies
+Webpack,Web Technologies
+Babel,Web Technologies
+Next.js,Web Technologies
+Nuxt.js,Web Technologies
+Svelte,Web Technologies
+GraphQL,Web Technologies
+REST API,Web Technologies
+SQL,Databases
+MySQL,Databases
+PostgreSQL,Databases
+MongoDB,Databases
+Redis,Databases
+Elasticsearch,Databases
+Cassandra,Databases
+Oracle,Databases
+SQLite,Databases
+MariaDB,Databases
+DynamoDB,Databases
+Firebase,Databases
+AWS,Cloud & DevOps
+Azure,Cloud & DevOps
+GCP,Cloud & DevOps
+Docker,Cloud & DevOps
+Kubernetes,Cloud & DevOps
+Jenkins,Cloud & DevOps
+GitLab,Cloud & DevOps
+GitHub,Cloud & DevOps
+Bitbucket,Cloud & DevOps
+Terraform,Cloud & DevOps
+Ansible,Cloud & DevOps
+Puppet,Cloud & DevOps
+Chef,Cloud & DevOps
+Prometheus,Cloud & DevOps
+Grafana,Cloud & DevOps
+Machine Learning,AI & Data Science
+Deep Learning,AI & Data Science
+NLP,AI & Data Science
+Computer Vision,AI & Data Science
+TensorFlow,AI & Data Science
+PyTorch,AI & Data Science
+Keras,AI & Data Science
+Scikit-learn,AI & Data Science
+Pandas,AI & Data Science
+NumPy,AI & Data Science
+SciPy,AI & Data Science
+Matplotlib,AI & Data Science
+Android,Mobile Development
+iOS,Mobile Development
+React Native,Mobile Development
+Flutter,Mobile Development
+Xamarin,Mobile Development
+Ionic,Mobile Development
+Objective-C,Mobile Development
+Agile,Other Skills
+Scrum,Other Skills
+Kanban,Other Skills
+JIRA,Other Skills
+Confluence,Other Skills
+Git,Other Skills
+SVN,Other Skills
+Linux,Other Skills
+Windows,Other Skills
+macOS,Other Skills
+CI/CD,Other Skills
+DevOps,Other Skills
+Testing,Other Skills
+JUnit,Other Skills
+Selenium,Other Skills
+Cypress,Other Skills
+Jest,Other Skills
+Mocha,Other Skills
+Blockchain,Other Skills
+Cybersecurity,Other Skills
+Networking,Other Skills

@@ -3,6 +3,18 @@
  * Provides functions to extract text from resume files
  */
 
+// Common words to exclude from skills
+const commonWords = [
+  "the", "and", "for", "with", "that", "this", "our", "your", "their", "have",
+  "will", "from", "about", "been", "must", "should", "would", "could", "they",
+  "them", "what", "when", "where", "which", "were", "there", "into", "also",
+  "than", "then", "being", "does", "more", "most", "such", "only", "some",
+  "very", "like", "just", "much", "many", "over", "well", "years", "year",
+  "month", "day", "time", "team", "work", "working", "position", "role", "job",
+  "candidate", "candidates", "applicant", "applicants", "company", "ability",
+  "experience", "skills", "required", "responsibilities", "qualifications"
+];
+
 // Sample resume texts for simulation
 const sampleResumes = [
   `John Smith
@@ -262,7 +274,7 @@ const extractContactInfo = (text) => {
   }
   
   // Extract phone
-  const phoneRegex = /(?:\+\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/;
+  const phoneRegex = /(?:\+?1[-.]?)?\s*\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})/;
   const phoneMatch = text.match(phoneRegex);
   if (phoneMatch) {
     contactInfo.phone = phoneMatch[0];
@@ -331,15 +343,28 @@ const extractSkills = (text) => {
     // Extract skills from the section using common patterns
     // Look for bullet points, commas, or other separators
     const skillPatterns = [
-      /[•\-*]\s*([A-Za-z0-9#\+\s]{2,25}?)(?:\n|$|,)/g,
-      /(?:^|\n|\s|,)([A-Za-z0-9#\+]{2,20})(?:\s*,|\s*\n|$)/g
+      // Match bullet points with skills
+      /[•\-\*]\s*([A-Za-z0-9#\+\s\/\.\-]{2,40}?)(?=\n|$|,)/g,
+      
+      // Match comma-separated skills
+      /(?:^|,\s*)([A-Za-z0-9#\+\s\/\.\-]{2,40})(?=\s*,|\s*\n|$)/g,
+      
+      // Match skills in parentheses
+      /\(([A-Za-z0-9#\+\s\/\.\-]{2,40})\)/g,
+      
+      // Match skills after common prefixes
+      /(?:proficient in|experience with|knowledge of|skilled in|expertise in)\s+([A-Za-z0-9#\+\s\/\.\-]{2,40})(?=\s*,|\s*\n|$)/gi
     ];
     
     skillPatterns.forEach(pattern => {
       let match;
       while ((match = pattern.exec(skillsSection)) !== null) {
         const skill = match[1].trim();
-        if (skill && skill.length > 1 && !skills.includes(skill)) {
+        if (skill && 
+            skill.length > 1 && 
+            !skills.includes(skill) &&
+            !commonWords.includes(skill.toLowerCase()) &&
+            !/^[0-9\s]+$/.test(skill)) {  // Exclude numbers-only matches
           skills.push(skill);
         }
       }
@@ -367,7 +392,9 @@ const extractSkills = (text) => {
   ];
   
   programmingKeywords.forEach(keyword => {
-    const regex = new RegExp(`\\b${keyword.toLowerCase()}\\b`, 'i');
+    // Escape special regex characters in the keyword
+    const escapedKeyword = keyword.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`\\b${escapedKeyword}\\b`, 'i');
     if (regex.test(normalizedText) && !skills.includes(keyword)) {
       skills.push(keyword);
     }
@@ -383,6 +410,18 @@ const extractSkills = (text) => {
  */
 const extractEducation = (text) => {
   const education = [];
+  
+  // Common degree patterns
+  const degreePatterns = [
+    // Full degree names
+    /(?:Bachelor|Master|Doctor|Associate)(?:'s)?\s+(?:of|in|degree in)?\s+[A-Za-z\s]+/gi,
+    
+    // Abbreviated degrees
+    /(?:B\.?S\.?|M\.?S\.?|Ph\.?D\.?|B\.?A\.?|M\.?A\.?|M\.?B\.?A\.?|B\.?Tech\.?|M\.?Tech\.?)\s+(?:in\s+)?[A-Za-z\s]+/gi,
+    
+    // Years with degrees
+    /(?:19|20)\d{2}[^\n]*(?:Bachelor|Master|Doctor|Associate|B\.?S\.?|M\.?S\.?|Ph\.?D\.?|B\.?A\.?|M\.?A\.?|M\.?B\.?A\.?)/gi
+  ];
   
   // Check for education section
   const educationSectionRegex = /education|academic background|educational background|academic history/i;
@@ -402,54 +441,61 @@ const extractEducation = (text) => {
       educationSection = text.substring(educationSectionIndex, educationSectionIndex + 1000);
     }
     
-    // Look for degree patterns
-    const degreePatterns = [
-      /(?:Bachelor|Master|Ph\.?D\.?|B\.S\.|M\.S\.|M\.B\.A\.|B\.A\.|B\.Sc\.)\s+(?:of|in)?\s+(?:[A-Za-z\s]+)/gi,
-      /(?:Bachelor's|Master's|Doctorate|Graduate)\s+(?:Degree|degree)?\s+(?:of|in)?\s+(?:[A-Za-z\s]+)/gi
-    ];
+    // Split into lines and process each line
+    const lines = educationSection.split('\n').map(line => line.trim()).filter(line => line);
     
-    let degreeMatches = [];
-    degreePatterns.forEach(pattern => {
-      const matches = educationSection.match(pattern) || [];
-      degreeMatches = [...degreeMatches, ...matches];
-    });
-    
-    // Look for university/school patterns
-    const universityPatterns = [
-      /(?:University|Institute|College|School)\s+of\s+[A-Za-z\s]+/gi,
-      /[A-Za-z\s]+(?:University|Institute|College|School)/gi
-    ];
-    
-    let universityMatches = [];
-    universityPatterns.forEach(pattern => {
-      const matches = educationSection.match(pattern) || [];
-      universityMatches = [...universityMatches, ...matches];
-    });
-    
-    // Look for date patterns
-    const datePatterns = [
-      /(?:19|20)\d{2}\s*[-–—]\s*(?:19|20)\d{2}|(?:19|20)\d{2}\s*[-–—]\s*Present/gi,
-      /(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(?:19|20)\d{2}\s*[-–—]\s*(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(?:19|20)\d{2}|Present/gi
-    ];
-    
-    let dateMatches = [];
-    datePatterns.forEach(pattern => {
-      const matches = educationSection.match(pattern) || [];
-      dateMatches = [...dateMatches, ...matches];
-    });
-    
-    // Combine the matches into education entries
-    if (universityMatches.length > 0) {
-      universityMatches.forEach((university, index) => {
-        const educationEntry = {
-          institution: university.trim(),
-          degree: degreeMatches[index] ? degreeMatches[index].trim() : "",
-          dates: dateMatches[index] ? dateMatches[index].trim() : ""
-        };
-        
-        education.push(educationEntry);
-      });
+    let currentEntry = "";
+    for (const line of lines) {
+      // Skip section headers and empty lines
+      if (line.toLowerCase().match(/^education|^academic/i) || line.length < 3) {
+        continue;
+      }
+      
+      // Check if line contains degree information
+      const hasDegreeInfo = degreePatterns.some(pattern => pattern.test(line));
+      
+      // Check if line contains a year
+      const hasYear = /(?:19|20)\d{2}/.test(line);
+      
+      // Check if line contains an institution name (assumed to be proper nouns)
+      const hasInstitution = /[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*(?:\s+(?:University|College|Institute|School))/i.test(line);
+      
+      // If line contains relevant information, add it to current entry
+      if (hasDegreeInfo || hasYear || hasInstitution) {
+        if (currentEntry) {
+          currentEntry += " " + line;
+        } else {
+          currentEntry = line;
+        }
+      } else if (currentEntry) {
+        // If we have a current entry and this line doesn't contain new info,
+        // save the current entry and start fresh
+        if (!education.includes(currentEntry)) {
+          education.push(currentEntry);
+        }
+        currentEntry = "";
+      }
     }
+    
+    // Add the last entry if exists
+    if (currentEntry && !education.includes(currentEntry)) {
+      education.push(currentEntry);
+    }
+  }
+  
+  // If no education found in section, try to find degree patterns anywhere in text
+  if (education.length === 0) {
+    degreePatterns.forEach(pattern => {
+      const matches = text.match(pattern);
+      if (matches) {
+        matches.forEach(match => {
+          const entry = match.trim();
+          if (!education.includes(entry)) {
+            education.push(entry);
+          }
+        });
+      }
+    });
   }
   
   return education;
@@ -463,8 +509,35 @@ const extractEducation = (text) => {
 const extractExperience = (text) => {
   const experience = [];
   
+  // Common job title patterns
+  const jobTitlePatterns = [
+    // Standard titles
+    /(?:Senior|Lead|Principal|Junior|Associate)?\s*(?:Software|Systems|Data|Full Stack|Frontend|Backend|DevOps|Cloud|Security|Network|Database|QA|Test|Product|Project|Program|Business|Marketing|Sales|HR|Financial|Operations)?\s*(?:Engineer|Developer|Architect|Analyst|Manager|Director|Consultant|Administrator|Specialist|Coordinator|Designer)/gi,
+    
+    // Abbreviated titles
+    /(?:Sr\.|Jr\.|Assoc\.)\s*(?:SW|SDE|SWE|PM|BA|QA|UI|UX)/gi
+  ];
+  
+  // Common company patterns
+  const companyPatterns = [
+    // Company with type
+    /[A-Z][a-zA-Z\s]*(?:Inc\.|LLC|Ltd\.|Corp\.|Corporation|Company|Technologies|Solutions|Systems|Group|International)/g,
+    
+    // Companies followed by location
+    /[A-Z][a-zA-Z\s]*(?:\||,|\s+-)\s*(?:[A-Z][a-zA-Z\s]*,\s*[A-Z]{2}|[A-Z][a-zA-Z\s]*)/g
+  ];
+  
+  // Date patterns
+  const datePatterns = [
+    // Standard date ranges
+    /(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{4}\s*[-–—]\s*(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{4}|Present/gi,
+    
+    // Year ranges
+    /\d{4}\s*[-–—]\s*(?:\d{4}|Present)/gi
+  ];
+  
   // Check for experience section
-  const experienceSectionRegex = /experience|work experience|employment history|work history|professional experience/i;
+  const experienceSectionRegex = /(?:work|professional)\s+experience|employment(?:\s+history)?/i;
   const experienceSectionMatch = text.match(experienceSectionRegex);
   
   if (experienceSectionMatch) {
@@ -481,48 +554,74 @@ const extractExperience = (text) => {
       experienceSection = text.substring(experienceSectionIndex, experienceSectionIndex + 2000);
     }
     
-    // Split the experience section into potential job blocks
-    const jobBlocks = experienceSection.split(/\n\s*\n/).filter(block => block.trim().length > 0);
+    // Split into lines and process each line
+    const lines = experienceSection.split('\n').map(line => line.trim()).filter(line => line);
     
-    // Process each job block
-    jobBlocks.forEach(block => {
-      // Skip the section header
-      if (block.toLowerCase().includes("experience") && block.split("\n").length <= 2) {
-        return;
+    let currentEntry = [];
+    let isProcessingBulletPoints = false;
+    
+    for (const line of lines) {
+      // Skip section headers and empty lines
+      if (line.toLowerCase().match(/^(?:work|professional)\s+experience|^employment/i) || line.length < 3) {
+        continue;
       }
       
-      // Extract company name (often in all caps or followed by location)
-      const companyRegex = /([A-Z][A-Za-z0-9\s&.,]+)(?:,|\n|$|\s*[-–—]\s*)/;
-      const companyMatch = block.match(companyRegex);
+      // Check if line contains job title
+      const hasJobTitle = jobTitlePatterns.some(pattern => pattern.test(line));
       
-      // Extract job title (often at the beginning of a line or following company)
-      const titleRegex = /(?:^|\n)([A-Z][a-z]+\s+[A-Za-z\s]+)(?:,|\n|$|\s*[-–—]\s*)/;
-      const titleMatch = block.match(titleRegex);
+      // Check if line contains company name
+      const hasCompany = companyPatterns.some(pattern => pattern.test(line));
       
-      // Extract dates
-      const dateRegex = /(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(?:19|20)\d{2}\s*[-–—]\s*(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(?:19|20)\d{2}|Present|(?:19|20)\d{2}\s*[-–—]\s*(?:19|20)\d{2}|(?:19|20)\d{2}\s*[-–—]\s*Present/i;
-      const dateMatch = block.match(dateRegex);
+      // Check if line contains dates
+      const hasDate = datePatterns.some(pattern => pattern.test(line));
       
-      // Extract bullet points
-      const bulletRegex = /[•\-*]\s*([^\n•\-*]+)/g;
-      const bullets = [];
-      let bulletMatch;
-      while ((bulletMatch = bulletRegex.exec(block)) !== null) {
-        bullets.push(bulletMatch[1].trim());
+      // Check if line is a bullet point
+      const isBulletPoint = /^[•\-\*\u2022\u2023\u2043\u204C\u204D\u2219\u25AA\u25CF\u25E6\u29BE\u29BF]\s/.test(line);
+      
+      // If line contains job information, start a new entry
+      if (hasJobTitle || hasCompany || hasDate) {
+        if (currentEntry.length > 0) {
+          // Save previous entry
+          experience.push(currentEntry.join('\n'));
+          currentEntry = [];
+        }
+        currentEntry.push(line);
+        isProcessingBulletPoints = false;
+      } else if (isBulletPoint || isProcessingBulletPoints) {
+        // Continue adding bullet points to current entry
+        currentEntry.push(line);
+        isProcessingBulletPoints = true;
+      } else if (currentEntry.length > 0 && line.length > 10) {
+        // Add additional information to current entry if it's substantial
+        currentEntry.push(line);
       }
-      
-      // Create job entry if we have a title or company
-      if (titleMatch || companyMatch) {
-        const jobEntry = {
-          title: titleMatch ? titleMatch[1].trim() : "",
-          company: companyMatch ? companyMatch[1].trim() : "",
-          dates: dateMatch ? dateMatch[0].trim() : "",
-          description: bullets.length > 0 ? bullets : [block.split("\n").slice(1).join(" ").trim()]
-        };
-        
-        experience.push(jobEntry);
+    }
+    
+    // Add the last entry if exists
+    if (currentEntry.length > 0) {
+      experience.push(currentEntry.join('\n'));
+    }
+  }
+  
+  // If no experience found in section, try to find job patterns anywhere in text
+  if (experience.length === 0) {
+    let matches = [];
+    jobTitlePatterns.forEach(pattern => {
+      const titleMatches = text.match(pattern);
+      if (titleMatches) {
+        titleMatches.forEach(match => {
+          // Get surrounding context (100 characters before and after)
+          const index = text.indexOf(match);
+          const start = Math.max(0, index - 100);
+          const end = Math.min(text.length, index + match.length + 100);
+          const context = text.substring(start, end).trim();
+          if (!matches.includes(context)) {
+            matches.push(context);
+          }
+        });
       }
     });
+    experience.push(...matches);
   }
   
   return experience;

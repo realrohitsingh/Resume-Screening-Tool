@@ -2,6 +2,27 @@ import React, { useEffect, useState } from "react";
 import "../styles/hrDashboard.css";
 
 const MAX_TEXT_LENGTH = 120;
+const API_BASE_URL = 'http://localhost:5000/api';
+
+// Industry options
+const INDUSTRIES = [
+  "Software Development",
+  "Data Science",
+  "Marketing",
+  "Finance",
+  "Healthcare",
+  "Sales",
+  "Human Resources",
+  "Design",
+  "Education",
+  "Manufacturing",
+  "Retail",
+  "Consulting",
+  "Legal",
+  "Real Estate",
+  "Construction",
+  "Hospitality"
+];
 
 const HRDashboard = () => {
   const [jobs, setJobs] = useState([]);
@@ -15,24 +36,36 @@ const HRDashboard = () => {
     description: "",
     requirements: "",
     experienceLevel: "Entry Level",
+    industry: "Software Development", // Default industry
     remote: false
   });
 
   useEffect(() => {
-    // Load jobs from localStorage when component mounts
-    const storedJobs = localStorage.getItem("hrJobs");
-    if (storedJobs) {
-      setJobs(JSON.parse(storedJobs));
-    }
-    setIsLoading(false);
-  }, []);
+    const loadJobs = async () => {
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (!user || !user.id) {
+          throw new Error("User not found");
+        }
 
-  // Save jobs to localStorage whenever they change
-  useEffect(() => {
-    if (!isLoading) {
-      localStorage.setItem("hrJobs", JSON.stringify(jobs));
-    }
-  }, [jobs, isLoading]);
+        const response = await fetch(`${API_BASE_URL}/hr/jobs?hr_id=${user.id}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch jobs");
+        }
+
+        const data = await response.json();
+        if (data.status === "success") {
+          setJobs(data.jobs);
+        }
+      } catch (error) {
+        console.error("Error loading jobs:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadJobs();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -42,32 +75,75 @@ const HRDashboard = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const newJob = {
-      id: Date.now().toString(),
-      ...formData,
-      datePosted: new Date().toISOString()
-    };
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (!user || !user.id) {
+        throw new Error("User not found");
+      }
 
-    setJobs([...jobs, newJob]);
-    setShowForm(false);
+      const response = await fetch(`${API_BASE_URL}/hr/jobs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          hr_id: user.id
+        }),
+      });
 
-    // Reset form
-    setFormData({
-      position: "",
-      company: "",
-      location: "",
-      description: "",
-      requirements: "",
-      experienceLevel: "Entry Level",
-      remote: false
-    });
+      if (!response.ok) {
+        throw new Error("Failed to add job");
+      }
+
+      const data = await response.json();
+      if (data.status === "success") {
+        setJobs([...jobs, data.job]);
+        setShowForm(false);
+        // Reset form
+        setFormData({
+          position: "",
+          company: "",
+          location: "",
+          description: "",
+          requirements: "",
+          experienceLevel: "Entry Level",
+          industry: "Software Development",
+          remote: false
+        });
+      }
+    } catch (error) {
+      console.error("Error adding job:", error);
+      alert("Failed to add job. Please try again.");
+    }
   };
 
-  const deleteJob = (id) => {
+  const deleteJob = async (id) => {
     if (window.confirm("Are you sure you want to delete this job posting?")) {
-      setJobs(jobs.filter(job => job.id !== id));
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (!user || !user.id) {
+          throw new Error("User not found");
+        }
+
+        const response = await fetch(`${API_BASE_URL}/hr/jobs/${id}?hr_id=${user.id}`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to delete job");
+        }
+
+        const data = await response.json();
+        if (data.status === "success") {
+          setJobs(jobs.filter(job => job.id !== id));
+        }
+      } catch (error) {
+        console.error("Error deleting job:", error);
+        alert("Failed to delete job. Please try again.");
+      }
     }
   };
 
@@ -87,7 +163,7 @@ const HRDashboard = () => {
       </div>
       <div className="hr-adv-scrollable-list no-footer-overlap">
         <div className="jobs-adv-header">
-          <h2>Active Job Postings <span className="count">({jobs.length})</span></h2>
+          <h2>Your Active Job Postings <span className="count">({jobs.length})</span></h2>
         </div>
         {jobs.length === 0 ? (
           <div className="no-jobs-adv">No jobs have been posted yet. Click the + button to add your first job posting!</div>
@@ -108,6 +184,7 @@ const HRDashboard = () => {
                   <div className="job-adv-meta">
                     <span className="company">{job.company}</span>
                     <span className="location">{job.location}</span>
+                    <span className="badge industry">{job.industry}</span>
                     <span className="badge exp">{job.experienceLevel}</span>
                     {job.remote && <span className="badge remote">Remote</span>}
                   </div>
@@ -116,7 +193,7 @@ const HRDashboard = () => {
                   {(desc.length > MAX_TEXT_LENGTH || reqs.length > MAX_TEXT_LENGTH) && (
                     <button className="show-more-btn" onClick={() => toggleShowMore(job.id)}>
                       {isExpanded ? "Show Less" : "Show More"}
-        </button>
+                    </button>
                   )}
                   <div className="job-adv-date">Posted: {new Date(job.datePosted).toLocaleDateString()}</div>
                 </div>
@@ -134,12 +211,21 @@ const HRDashboard = () => {
               <input type="text" name="position" placeholder="Job Title" value={formData.position} onChange={handleInputChange} required />
               <input type="text" name="company" placeholder="Company" value={formData.company} onChange={handleInputChange} required />
               <input type="text" name="location" placeholder="Location" value={formData.location} onChange={handleInputChange} required />
-              <select name="experienceLevel" value={formData.experienceLevel} onChange={handleInputChange} required>
-                <option value="Entry Level">Entry Level</option>
-                <option value="Mid-Level">Mid-Level</option>
-                <option value="Senior">Senior</option>
-                <option value="Executive">Executive</option>
-              </select>
+              <div className="form-row">
+                <select name="experienceLevel" value={formData.experienceLevel} onChange={handleInputChange} required>
+                  <option value="Entry Level">Entry Level</option>
+                  <option value="Mid-Level">Mid-Level</option>
+                  <option value="Senior">Senior</option>
+                  <option value="Executive">Executive</option>
+                </select>
+                <select name="industry" value={formData.industry} onChange={handleInputChange} required>
+                  {INDUSTRIES.map(industry => (
+                    <option key={industry} value={industry}>
+                      {industry}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <textarea name="description" placeholder="Job Description" value={formData.description} onChange={handleInputChange} rows={3} required />
               <textarea name="requirements" placeholder="Requirements" value={formData.requirements} onChange={handleInputChange} rows={2} required />
               <label className="checkbox-label">
@@ -148,8 +234,8 @@ const HRDashboard = () => {
               <div className="modal-adv-actions">
                 <button type="button" className="cancel-btn" onClick={() => setShowForm(false)}>Cancel</button>
                 <button type="submit" className="submit-btn">Post Job</button>
-            </div>
-          </form>
+              </div>
+            </form>
           </div>
         </div>
       )}
